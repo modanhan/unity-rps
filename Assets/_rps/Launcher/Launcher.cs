@@ -34,7 +34,7 @@ public class Launcher : MonoBehaviourPunCallbacks
     void Start()
     {
         Connect();
-
+        playerNames = new List<string>();
     }
 
     // Update is called once per frame
