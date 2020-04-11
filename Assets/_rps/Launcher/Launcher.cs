@@ -21,7 +21,7 @@ public class Launcher : MonoBehaviourPunCallbacks
     /// </summary>
     [Tooltip("The maximum number of players per room. When a room is full, it can't be joined by new players, and so new room will be created")]
     [SerializeField]
-    private byte maxPlayersPerRoom = 4;
+    private byte maxPlayersPerRoom = 2;
 
     void Awake()
     {
@@ -88,13 +88,16 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     bool joined_room = false;
 
+    bool game_started = false;
+
     public override void OnJoinedRoom()
     {
         Debug.Log("PUN Basics Tutorial/Launcher: OnJoinedRoom() called by PUN. Now this client is in a room.");
-        foreach (var v in PhotonNetwork.PlayerListOthers)
+        foreach (var v in PhotonNetwork.PlayerList)
         {
             playerNames.Add(v.NickName);
         }
+        updateGameStarted();
         joined_room = true;
     }
 
@@ -102,6 +105,20 @@ public class Launcher : MonoBehaviourPunCallbacks
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
         playerNames.Add(newPlayer.NickName);
+        updateGameStarted();
+    }
+
+    void updateGameStarted()
+    {
+        Debug.Log(playerNames.Count);
+        if (playerNames.Count == 1)
+        {
+            game_started = true;
+        }
+        else if (playerNames.Count > 1)
+        {
+            Debug.LogError("More than 2 players? how?");
+        }
     }
 
     #endregion
@@ -110,6 +127,37 @@ public class Launcher : MonoBehaviourPunCallbacks
     public string playerName;
     void OnGUI()
     {
+        if (game_started)
+        {
+            int y = 10;
+            if (GUI.Button(new Rect(10, y += 25, 200, 20), "Rock"))
+            {
+
+            }
+
+            if (GUI.Button(new Rect(10, y += 25, 200, 20), "Paper"))
+            {
+
+            }
+
+            if (GUI.Button(new Rect(10, y += 25, 200, 20), "Scissor"))
+            {
+
+            }
+            return;
+        }
+
+        if (joined_room)
+        {
+            int y = 10;
+            GUI.Label(new Rect(10, y += 25, 200, 20), "Players:");
+            foreach (var v in playerNames)
+            {
+                GUI.Label(new Rect(10, y += 25, 200, 20), v);
+            }
+            return;
+        }
+
         if (!entered_name)
         {
             int y = 10;
@@ -123,18 +171,6 @@ public class Launcher : MonoBehaviourPunCallbacks
                 // #Critical: The first we try to do is to join a potential existing room. If there is, good, else, we'll be called back with OnJoinRandomFailed()
                 PhotonNetwork.JoinRandomRoom();
             }
-        }
-
-        if (joined_room)
-        {
-            int y = 10;
-            GUI.Label(new Rect(10, y += 25, 200, 20), "Players:");
-            GUI.Label(new Rect(10, y += 25, 200, 20), playerName);
-            foreach (var v in playerNames)
-            {
-                GUI.Label(new Rect(10, y += 25, 200, 20), v);
-            }
-
         }
     }
 }
