@@ -125,11 +125,11 @@ public class Launcher : MonoBehaviourPunCallbacks, IOnEventCallback
     void updateGameStarted()
     {
         Debug.Log(playerNames.Count);
-        if (playerNames.Count == 1)
+        if (playerNames.Count == maxPlayersPerRoom)
         {
             game_started = true;
         }
-        else if (playerNames.Count > 1)
+        else if (playerNames.Count > maxPlayersPerRoom)
         {
             Debug.LogError("More than 2 players? how?");
         }
