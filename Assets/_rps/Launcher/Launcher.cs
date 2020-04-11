@@ -4,8 +4,9 @@ using UnityEngine;
 
 using Photon.Pun;
 using Photon.Realtime;
+using ExitGames.Client.Photon;
 
-public class Launcher : MonoBehaviourPunCallbacks
+public class Launcher : MonoBehaviourPunCallbacks, IOnEventCallback
 {
 
     /// <summary>
@@ -35,6 +36,19 @@ public class Launcher : MonoBehaviourPunCallbacks
     {
         Connect();
         playerNames = new List<string>();
+        play_history = new List<player_choice>();
+    }
+
+    public override void OnEnable()
+    {
+        base.OnEnable();
+        PhotonNetwork.AddCallbackTarget(this);
+    }
+
+    public override void OnDisable()
+    {
+        base.OnDisable();
+        PhotonNetwork.RemoveCallbackTarget(this);
     }
 
     // Update is called once per frame
@@ -125,6 +139,22 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     bool entered_name = false;
     public string playerName;
+
+    struct player_choice
+    {
+        public string n;
+        public string s;
+    }
+    List<player_choice> play_history;
+
+    void Play(string p, string s)
+    {
+        object[] content = new object[] { p, s };
+        RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All }; // You would have to set the Receivers to All in order to receive this event on the local client as well
+        SendOptions sendOptions = new SendOptions { Reliability = true };
+        PhotonNetwork.RaiseEvent(0, content, raiseEventOptions, sendOptions);
+    }
+
     void OnGUI()
     {
         if (game_started)
@@ -132,18 +162,26 @@ public class Launcher : MonoBehaviourPunCallbacks
             int y = 10;
             if (GUI.Button(new Rect(10, y += 25, 200, 20), "Rock"))
             {
-
+                Play(playerName, "Rock");
             }
 
             if (GUI.Button(new Rect(10, y += 25, 200, 20), "Paper"))
             {
 
+                Play(playerName, "Paper");
             }
 
             if (GUI.Button(new Rect(10, y += 25, 200, 20), "Scissor"))
             {
 
+                Play(playerName, "Scissor");
             }
+
+            foreach (var v in play_history)
+            {
+                GUI.Label(new Rect(10, y += 25, 200, 20), v.n + " played " + v.s);
+            }
+
             return;
         }
 
@@ -171,6 +209,24 @@ public class Launcher : MonoBehaviourPunCallbacks
                 // #Critical: The first we try to do is to join a potential existing room. If there is, good, else, we'll be called back with OnJoinRandomFailed()
                 PhotonNetwork.JoinRandomRoom();
             }
+        }
+    }
+
+    public void OnEvent(EventData photonEvent)
+    {
+        Debug.Log(photonEvent.Code);
+        if (photonEvent.Code == 0)
+        {
+            // player played a card
+            object[] data = (object[])photonEvent.CustomData;
+            string player = (string)data[0];
+            string choice = (string)data[1];
+
+            player_choice choice1 = new player_choice();
+            choice1.n = player;
+            choice1.s = choice;
+
+            play_history.Add(choice1);
         }
     }
 }
