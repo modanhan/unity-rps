@@ -69,9 +69,7 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public override void OnConnectedToMaster()
     {
-        Debug.Log("PUN Basics Tutorial/Launcher: OnConnectedToMaster() was called by PUN");
-        // #Critical: The first we try to do is to join a potential existing room. If there is, good, else, we'll be called back with OnJoinRandomFailed()
-        PhotonNetwork.JoinRandomRoom();
+
     }
 
 
@@ -88,9 +86,51 @@ public class Launcher : MonoBehaviourPunCallbacks
         PhotonNetwork.CreateRoom(null, new RoomOptions { MaxPlayers = maxPlayersPerRoom });
     }
 
+    bool joined_room = false;
+
     public override void OnJoinedRoom()
     {
         Debug.Log("PUN Basics Tutorial/Launcher: OnJoinedRoom() called by PUN. Now this client is in a room.");
+        joined_room = true;
     }
+
+    List<string> playerNames;
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        playerNames.Add(newPlayer.NickName);
+    }
+
     #endregion
+
+    bool entered_name = false;
+    public string playerName;
+    void OnGUI()
+    {
+        if (!entered_name)
+        {
+            int y = 10;
+            playerName = GUI.TextField(new Rect(10, y += 25, 200, 20), playerName, 25);
+            if (GUI.Button(new Rect(10, y += 25, 200, 20), "Enter"))
+            {
+                entered_name = true;
+                PhotonNetwork.NickName = playerName;
+
+                Debug.Log("PUN Basics Tutorial/Launcher: OnConnectedToMaster() was called by PUN");
+                // #Critical: The first we try to do is to join a potential existing room. If there is, good, else, we'll be called back with OnJoinRandomFailed()
+                PhotonNetwork.JoinRandomRoom();
+            }
+        }
+
+        if (joined_room)
+        {
+            int y = 10;
+            GUI.Label(new Rect(10, y += 25, 200, 20), "Players:");
+            GUI.Label(new Rect(10, y += 25, 200, 20), playerName);
+            foreach (var v in playerNames)
+            {
+                GUI.Label(new Rect(10, y += 25, 200, 20), v);
+            }
+
+        }
+    }
 }
