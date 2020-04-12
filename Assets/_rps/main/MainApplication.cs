@@ -6,9 +6,10 @@ using UnityEngine;
 
 public class MainApplication : MonoBehaviourPunCallbacks
 {
+    public const int kMaxPlayersPerRoom = 2;
     public enum State
     {
-        kNone, kNotConnected, kConnected, kJoiningRoom, kJoinedRoom, kGameStarted
+        kNone, kNotConnected, kConnected, kEnteredRoom, kGameStarted
     }
     State state = State.kNone;
 
@@ -26,6 +27,7 @@ public class MainApplication : MonoBehaviourPunCallbacks
         {
             case State.kNotConnected: currentStateScript = gameObject.AddComponent<NotConnected>(); currentStateScript.Init(this); break;
             case State.kConnected: currentStateScript = gameObject.AddComponent<Connected>(); currentStateScript.Init(this); break;
+            case State.kEnteredRoom: currentStateScript = gameObject.AddComponent<EnteredRoom>(); currentStateScript.Init(this); break;
             default:
                 break;
         }

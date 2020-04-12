@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using Photon.Pun;
+using Photon.Realtime;
 using UnityEngine;
 
 public class Connected : MainApplicationReference
@@ -11,16 +12,32 @@ public class Connected : MainApplicationReference
     {
         this.application = application;
     }
+    public override void OnJoinedRoom()
+    {
+        application.UpdateState(MainApplication.State.kEnteredRoom);
+    }
+    public override void OnJoinRandomFailed(short returnCode, string message)
+    {
+        PhotonNetwork.CreateRoom(null, new RoomOptions { MaxPlayers = MainApplication.kMaxPlayersPerRoom });
+    }
     void OnGUI()
     {
         int y = 10;
-        GUI.Label(new Rect(10, y += 25, 200, 20), "Connected!");
-        GUI.enabled = !joining;
-        if (GUI.Button(new Rect(10, y += 25, 200, 20), "Quick play"))
+        if (joining)
         {
-            PhotonNetwork.JoinRandomRoom();
-            joining = true;
+            GUI.Label(new Rect(10, y += 25, 200, 20), "Finding opponent...");
         }
-        GUI.enabled = true;
+        else
+        {
+            GUI.Label(new Rect(10, y += 25, 200, 20), "Connected!");
+            GUI.enabled = !joining;
+            if (GUI.Button(new Rect(10, y += 25, 200, 20), "Quick play"))
+            {
+                PhotonNetwork.JoinRandomRoom();
+                joining = true;
+            }
+            GUI.enabled = true;
+
+        }
     }
 }
