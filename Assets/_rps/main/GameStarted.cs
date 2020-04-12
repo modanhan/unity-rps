@@ -27,6 +27,7 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
 
     void Awake()
     {
+        CardDatabase.Init();
         self = PhotonNetwork.LocalPlayer;
         opponent = PhotonNetwork.PlayerListOthers[0];
         selfState = new RPSPlayerState();
