@@ -72,8 +72,6 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
             if (player == self)
             {
                 selfPlayed = ID;
-                selfState.hand.RemoveAt(idx);
-                selfState.Draw();
             }
             else if (player == opponent)
             {
@@ -85,6 +83,8 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
                 return;
             }
             UpdatePlayed();
+            selfState.hand.RemoveAt(idx);
+            selfState.Draw();
         }
     }
 
