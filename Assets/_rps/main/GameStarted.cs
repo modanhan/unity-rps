@@ -43,7 +43,7 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
         }
         RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
         SendOptions sendOptions = new SendOptions { Reliability = true };
-        PhotonNetwork.RaiseEvent(EventCode.kPlayedCard, data, raiseEventOptions, sendOptions);
+        PhotonNetwork.RaiseEvent(EventCode.kSyncInitCards, data, raiseEventOptions, sendOptions);
     }
 
     public override void OnEnable()
