@@ -1,6 +1,31 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
+
+public class RPSPlayerState
+{
+    const int kDefaultHandSize = 5;
+    public int health;
+    public List<int> deck;
+    public List<int> hand;
+    public void TakeDamage(int damage)
+    {
+        health -= damage;
+    }
+    public RPSPlayerState()
+    {
+        deck = Deck.deck_default;
+        deck.Shuffle();
+        for (int i = 0; i < kDefaultHandSize; ++i)
+        {
+            Draw();
+        }
+    }
+    public void Draw()
+    {
+        hand.Add(deck[0]);
+        deck.RemoveAt(0);
+    }
+}
 
 public enum CardType
 {
@@ -12,8 +37,10 @@ public enum CardResult
     None, Win, Lose, Tie
 }
 
-public class Card
+public abstract class Card
 {
+    public int ID;
+    public CardType type;
     public static CardResult Compare(CardType a, CardType b)
     {
         if (a == CardType.None && b == CardType.None) return CardResult.Tie;
@@ -26,4 +53,14 @@ public class Card
         if (a == CardType.Scissors && b == CardType.Paper) return CardResult.Win;
         return CardResult.Lose;
     }
+    public Card(CardType type)
+    {
+        this.type = type;
+    }
+
+    public abstract void Win(RPSPlayerState self, RPSPlayerState opponent);
+    public abstract void Tie(RPSPlayerState self, RPSPlayerState opponent);
+    public abstract void Lose(RPSPlayerState self, RPSPlayerState opponent);
+    public abstract string Name();
+    public abstract string Desc();
 }

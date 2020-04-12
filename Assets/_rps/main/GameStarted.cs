@@ -12,13 +12,11 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
 
     Player self;
     Player opponent;
+    RPSPlayerState selfState;
+    RPSPlayerState opponentState;
+    int selfPlayed = -1;
+    int opponentPlayed = -1;
 
-    class PlayerState
-    {
-        public int health = 10;
-        public CardType played = CardType.None;
-    }
-    PlayerState selfState, opponentState;
     int currentRound = 1;
     CardResult roundResult = CardResult.None;
 
@@ -31,8 +29,8 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
     {
         self = PhotonNetwork.LocalPlayer;
         opponent = PhotonNetwork.PlayerListOthers[0];
-        selfState = new PlayerState();
-        opponentState = new PlayerState();
+        selfState = new RPSPlayerState();
+        opponentState = new RPSPlayerState();
     }
 
     public override void OnEnable()
@@ -50,14 +48,13 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
     void newRound()
     {
         currentRound++;
-        selfState.played = CardType.None;
-        opponentState.played = CardType.None;
+        selfPlayed = -1;
+        opponentPlayed = -1;
     }
 
-    void Play(CardType type)
+    void Play(int ID)
     {
-        selfState.played = type;
-        object[] data = { type };
+        object[] data = { ID };
         RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
         SendOptions sendOptions = new SendOptions { Reliability = true };
         PhotonNetwork.RaiseEvent(EventCode.kPlayedCard, data, raiseEventOptions, sendOptions);
@@ -69,14 +66,14 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
         {
             var player = PhotonNetwork.CurrentRoom.GetPlayer(photonEvent.Sender);
             object[] data = (object[])photonEvent.CustomData;
-            CardType type = (CardType)data[0];
+            int playeID = (int)data[0];
             if (player == self)
             {
-                selfState.played = type;
+                selfPlayed = playeID;
             }
             else if (player == opponent)
             {
-                opponentState.played = type;
+                opponentPlayed = playeID;
             }
             else
             {
@@ -89,18 +86,26 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
 
     void UpdatePlayed()
     {
-        if (selfState.played != CardType.None && opponentState.played != CardType.None)
+        if (selfPlayed != -1 && opponentPlayed != -1)
         {
-            var result = Card.Compare(selfState.played, opponentState.played);
+            Card selfCard = CardDatabase.GetCard(selfPlayed);
+            Card opponentCard = CardDatabase.GetCard(opponentPlayed);
+            var result = Card.Compare(selfCard.type, opponentCard.type);
             if (result == CardResult.Win)
             {
-                opponentState.health--;
+                selfCard.Win(selfState, opponentState);
+                opponentCard.Lose(opponentState, selfState);
             }
             else if (result == CardResult.Lose)
             {
-                selfState.health--;
+                selfCard.Lose(selfState, opponentState);
+                opponentCard.Win(opponentState, selfState);
             }
-            roundResult = result;
+            else if (result == CardResult.Tie)
+            {
+                selfCard.Tie(selfState, opponentState);
+                opponentCard.Tie(opponentState, selfState);
+            }
             newRound();
         }
     }
@@ -113,12 +118,12 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
         GUI.Label(new Rect(10, y += 25, 200, 20), opponent.NickName);
 
         GUI.Label(new Rect(10, y += 50, 200, 20), "Round " + currentRound);
-        GUI.Label(new Rect(10, y += 25, 200, 20), self.NickName + "health: " + selfState.health);
-        GUI.Label(new Rect(10, y += 25, 200, 20), opponent.NickName + "Health: " + opponentState.health);
+        GUI.Label(new Rect(10, y += 25, 200, 20), self.NickName + " health: " + selfState.health);
+        GUI.Label(new Rect(10, y += 25, 200, 20), opponent.NickName + " health: " + opponentState.health);
 
-        if (selfState.played != CardType.None)
+        if (selfPlayed != -1)
         {
-            GUI.Label(new Rect(10, y += 50, 200, 20), "Played " + selfState.played);
+            GUI.Label(new Rect(10, y += 50, 200, 20), "Played " + CardDatabase.GetCard(selfPlayed).Name());
         }
         else
         {
@@ -135,19 +140,15 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
 
         y += 25;
         {
-            GUI.enabled = selfState.played == CardType.None;
+            GUI.enabled = selfPlayed == -1;
             int x = 10;
-            if (GUI.Button(new Rect(10, y, 100, 100), "Rock"))
+            foreach (var ID in selfState.hand)
             {
-                Play(CardType.Rock);
-            }
-            if (GUI.Button(new Rect(x += 110, y, 100, 100), "Paper"))
-            {
-                Play(CardType.Paper);
-            }
-            if (GUI.Button(new Rect(x += 110, y, 100, 100), "Scissors"))
-            {
-                Play(CardType.Scissors);
+                var card = CardDatabase.GetCard(ID);
+                if (GUI.Button(new Rect(x += 100, y, 100, 100), card.Name() + "\n\n" + card.Desc()))
+                {
+                    Play(ID);
+                }
             }
             GUI.enabled = true;
         }
