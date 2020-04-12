@@ -15,6 +15,7 @@ public class RPSPlayerState
     {
         deck = Deck.deck_default;
         deck.Shuffle();
+        hand = new List<int>();
         for (int i = 0; i < kDefaultHandSize; ++i)
         {
             Draw();
