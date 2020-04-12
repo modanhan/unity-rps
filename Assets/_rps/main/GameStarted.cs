@@ -24,7 +24,8 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
     {
         this.application = application;
         selfState = new RPSPlayerState();
-        Debug.Log(selfState.deck);
+
+        for (int i = 0; i < selfState.deck.Count; ++i) Debug.Log(selfState.deck[i]);
         SyncInitCards();
     }
 
@@ -82,10 +83,9 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
             if (player == self) return;
             object[] data = (object[])photonEvent.CustomData;
             opponentState = new RPSPlayerState();
-            Debug.Log(opponentState.deck);
             for (int i = 0; i < opponentState.deck.Count; ++i)
             {
-                opponentState.deck[i] = (int)data[i];
+                opponentState.deck[i] = (int)data[i]; Debug.Log(opponentState.deck[i]);
             }
             for (int i = 0; i < RPSPlayerState.kDefaultHandSize; ++i)
             {
