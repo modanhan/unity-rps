@@ -30,6 +30,7 @@ public class Connected : MainApplicationReference
         else
         {
             GUI.Label(new Rect(10, y += 25, 200, 20), "Connected!");
+            GUI.Label(new Rect(10, y += 25, 200, 20), "Welcome! " + PhotonNetwork.NickName);
             GUI.enabled = !joining;
             if (GUI.Button(new Rect(10, y += 25, 200, 20), "Quick play"))
             {

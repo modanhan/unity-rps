@@ -38,7 +38,10 @@ public class EnteredRoom : MainApplicationReference
             GUI.Label(new Rect(10, y += 25, 200, 20), "Worthy opponent: ");
             foreach (var v in playerNames)
             {
-                GUI.Label(new Rect(10, y += 25, 200, 20), v);
+                if (v != PhotonNetwork.NickName)
+                {
+                    GUI.Label(new Rect(10, y += 25, 200, 20), v);
+                }
             }
         }
     }
