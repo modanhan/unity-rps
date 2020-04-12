@@ -68,13 +68,14 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
             var player = PhotonNetwork.CurrentRoom.GetPlayer(photonEvent.Sender);
             object[] data = (object[])photonEvent.CustomData;
             int idx = (int)data[0];
-            int ID = selfState.hand[idx];
             if (player == self)
             {
+                int ID = selfState.hand[idx];
                 selfPlayed = ID;
             }
             else if (player == opponent)
             {
+                int ID = opponentState.hand[idx];
                 opponentPlayed = ID;
             }
             else
