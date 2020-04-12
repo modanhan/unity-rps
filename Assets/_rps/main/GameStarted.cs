@@ -24,6 +24,7 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
     {
         this.application = application;
         selfState = new RPSPlayerState();
+        Debug.Log(selfState.deck);
         SyncInitCards();
     }
 
