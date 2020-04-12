@@ -6,4 +6,5 @@ public class EventCode
 
 {
     public const int kPlayedCard = 0;
+    public const int kSyncInitCards = 1;
 }

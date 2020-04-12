@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class RPSPlayerState
 {
-    const int kDefaultHandSize = 5;
+    public const int kDefaultHandSize = 5;
     public int health = 30;
     public List<int> deck;
     public List<int> hand;
@@ -16,10 +16,6 @@ public class RPSPlayerState
         deck = Deck.deck_default;
         deck.Shuffle();
         hand = new List<int>();
-        for (int i = 0; i < kDefaultHandSize; ++i)
-        {
-            Draw();
-        }
     }
     public bool Draw()
     {

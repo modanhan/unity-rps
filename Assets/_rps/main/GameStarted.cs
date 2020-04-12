@@ -23,6 +23,8 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
     public override void Init(MainApplication application)
     {
         this.application = application;
+        selfState = new RPSPlayerState();
+        SyncInitCards();
     }
 
     void Awake()
@@ -30,8 +32,18 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
         CardDatabase.Init();
         self = PhotonNetwork.LocalPlayer;
         opponent = PhotonNetwork.PlayerListOthers[0];
-        selfState = new RPSPlayerState();
-        opponentState = new RPSPlayerState();
+    }
+
+    void SyncInitCards()
+    {
+        object[] data = new object[selfState.deck.Count];
+        for (int i = 0; i < selfState.deck.Count; ++i)
+        {
+            data[i] = selfState.deck[i];
+        }
+        RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
+        SendOptions sendOptions = new SendOptions { Reliability = true };
+        PhotonNetwork.RaiseEvent(EventCode.kPlayedCard, data, raiseEventOptions, sendOptions);
     }
 
     public override void OnEnable()
@@ -63,7 +75,22 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
 
     public void OnEvent(EventData photonEvent)
     {
-        if (photonEvent.Code == EventCode.kPlayedCard)
+        if (photonEvent.Code == EventCode.kSyncInitCards)
+        {
+            object[] data = (object[])photonEvent.CustomData;
+            opponentState = new RPSPlayerState();
+            for (int i = 0; i < opponentState.deck.Count; ++i)
+            {
+                opponentState.deck[i] = (int)data[i];
+                Debug.Log(CardDatabase.GetCard(opponentState.deck[i]).Name());
+            }
+            for (int i = 0; i < RPSPlayerState.kDefaultHandSize; ++i)
+            {
+                selfState.Draw();
+                opponentState.Draw();
+            }
+        }
+        else if (photonEvent.Code == EventCode.kPlayedCard)
         {
             var player = PhotonNetwork.CurrentRoom.GetPlayer(photonEvent.Sender);
             object[] data = (object[])photonEvent.CustomData;
