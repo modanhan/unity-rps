@@ -28,6 +28,7 @@ public class MainApplication : MonoBehaviourPunCallbacks
             case State.kNotConnected: currentStateScript = gameObject.AddComponent<NotConnected>(); currentStateScript.Init(this); break;
             case State.kConnected: currentStateScript = gameObject.AddComponent<Connected>(); currentStateScript.Init(this); break;
             case State.kEnteredRoom: currentStateScript = gameObject.AddComponent<EnteredRoom>(); currentStateScript.Init(this); break;
+            case State.kGameStarted: currentStateScript = gameObject.AddComponent<GameStarted>(); currentStateScript.Init(this); break;
             default:
                 break;
         }

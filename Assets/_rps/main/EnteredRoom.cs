@@ -8,41 +8,37 @@ public class EnteredRoom : MainApplicationReference
 {
     MainApplication application;
 
-    List<string> playerNames;
+    List<Player> players;
     public override void Init(MainApplication application)
     {
         this.application = application;
         foreach (var v in PhotonNetwork.PlayerList)
         {
-            playerNames.Add(v.NickName);
+            UpdateNewPlayer(v);
         }
     }
 
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
-        playerNames.Add(newPlayer.NickName);
+        UpdateNewPlayer(newPlayer);
     }
+
+    void UpdateNewPlayer(Player newPlayer)
+    {
+        players.Add(newPlayer);
+        if (players.Count == MainApplication.kMaxPlayersPerRoom)
+        {
+            application.UpdateState(MainApplication.State.kGameStarted);
+        }
+    }
+
     void Awake()
     {
-        playerNames = new List<string>();
+        players = new List<Player>();
     }
     void OnGUI()
     {
         int y = 10;
-        if (playerNames.Count != MainApplication.kMaxPlayersPerRoom)
-        {
-            GUI.Label(new Rect(10, y += 25, 200, 20), "Finding opponent...");
-        }
-        else
-        {
-            GUI.Label(new Rect(10, y += 25, 200, 20), "Worthy opponent: ");
-            foreach (var v in playerNames)
-            {
-                if (v != PhotonNetwork.NickName)
-                {
-                    GUI.Label(new Rect(10, y += 25, 200, 20), v);
-                }
-            }
-        }
+        GUI.Label(new Rect(10, y += 25, 200, 20), "Finding opponent...");
     }
 }
