@@ -14,8 +14,8 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
     Player opponent;
     RPSPlayerState selfState;
     RPSPlayerState opponentState;
-    int selfPlayed = -1;
-    int opponentPlayed = -1;
+    int selfIdx = -1;
+    int opponentIdx = -1;
 
     int currentRound = 1;
     CardResult roundResult = CardResult.None;
@@ -61,8 +61,8 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
     void newRound()
     {
         currentRound++;
-        selfPlayed = -1;
-        opponentPlayed = -1;
+        selfIdx = -1;
+        opponentIdx = -1;
     }
 
     void Play(int idx)
@@ -77,12 +77,13 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
     {
         if (photonEvent.Code == EventCode.kSyncInitCards)
         {
+            var player = PhotonNetwork.CurrentRoom.GetPlayer(photonEvent.Sender);
+            if (player == self) return;
             object[] data = (object[])photonEvent.CustomData;
             opponentState = new RPSPlayerState();
             for (int i = 0; i < opponentState.deck.Count; ++i)
             {
                 opponentState.deck[i] = (int)data[i];
-                Debug.Log(CardDatabase.GetCard(opponentState.deck[i]).Name());
             }
             for (int i = 0; i < RPSPlayerState.kDefaultHandSize; ++i)
             {
@@ -97,13 +98,13 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
             int idx = (int)data[0];
             if (player == self)
             {
-                int ID = selfState.hand[idx];
-                selfPlayed = ID;
+                selfIdx = idx;
+                int selfID = selfState.hand[selfIdx]; Debug.Log("self played " + CardDatabase.GetCard(selfID).Name());
             }
             else if (player == opponent)
             {
-                int ID = opponentState.hand[idx];
-                opponentPlayed = ID;
+                opponentIdx = idx;
+                int opponentId = opponentState.hand[opponentIdx]; Debug.Log("opponent played " + CardDatabase.GetCard(opponentId).Name());
             }
             else
             {
@@ -111,17 +112,17 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
                 return;
             }
             UpdatePlayed();
-            selfState.hand.RemoveAt(idx);
-            selfState.Draw();
         }
     }
 
     void UpdatePlayed()
     {
-        if (selfPlayed != -1 && opponentPlayed != -1)
+        if (selfIdx != -1 && opponentIdx != -1)
         {
-            Card selfCard = CardDatabase.GetCard(selfPlayed);
-            Card opponentCard = CardDatabase.GetCard(opponentPlayed);
+            int selfID = selfState.hand[selfIdx];
+            int opponentID = opponentState.hand[opponentIdx];
+            Card selfCard = CardDatabase.GetCard(selfID);
+            Card opponentCard = CardDatabase.GetCard(opponentID);
             var result = Card.Compare(selfCard.type, opponentCard.type);
             if (result == CardResult.Win)
             {
@@ -138,6 +139,10 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
                 selfCard.Tie(selfState, opponentState);
                 opponentCard.Tie(opponentState, selfState);
             }
+            selfState.hand.RemoveAt(selfIdx);
+            selfState.Draw();
+            opponentState.hand.RemoveAt(opponentIdx);
+            opponentState.Draw();
             newRound();
         }
     }
@@ -156,9 +161,9 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
             GUI.Label(new Rect(10, y += 25, 200, 20), opponent.NickName + " health: " + opponentState.health);
         }
 
-        if (selfPlayed != -1)
+        if (selfIdx != -1)
         {
-            GUI.Label(new Rect(10, y += 50, 200, 20), "Played " + CardDatabase.GetCard(selfPlayed).Name());
+            GUI.Label(new Rect(10, y += 50, 200, 20), "Played " + CardDatabase.GetCard(selfIdx).Name());
         }
         else
         {
@@ -176,7 +181,7 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
         y += 25;
         {
             GUI.skin.button.wordWrap = true;
-            GUI.enabled = (selfPlayed == -1) && (opponentState != null);
+            GUI.enabled = (selfIdx == -1) && (opponentState != null);
             int x = -90;
             for (int i = 0; i < selfState.hand.Count; ++i)
             {
