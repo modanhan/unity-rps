@@ -151,7 +151,10 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
 
         GUI.Label(new Rect(10, y += 50, 200, 20), "Round " + currentRound);
         GUI.Label(new Rect(10, y += 25, 200, 20), self.NickName + " health: " + selfState.health);
-        GUI.Label(new Rect(10, y += 25, 200, 20), opponent.NickName + " health: " + opponentState.health);
+        if (opponentState != null)
+        {
+            GUI.Label(new Rect(10, y += 25, 200, 20), opponent.NickName + " health: " + opponentState.health);
+        }
 
         if (selfPlayed != -1)
         {
@@ -173,7 +176,7 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
         y += 25;
         {
             GUI.skin.button.wordWrap = true;
-            GUI.enabled = selfPlayed == -1;
+            GUI.enabled = (selfPlayed == -1) && (opponentState != null);
             int x = -90;
             for (int i = 0; i < selfState.hand.Count; ++i)
             {
