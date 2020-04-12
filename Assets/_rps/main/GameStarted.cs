@@ -81,6 +81,7 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
             if (player == self) return;
             object[] data = (object[])photonEvent.CustomData;
             opponentState = new RPSPlayerState();
+            Debug.Log(opponentState.deck);
             for (int i = 0; i < opponentState.deck.Count; ++i)
             {
                 opponentState.deck[i] = (int)data[i];
