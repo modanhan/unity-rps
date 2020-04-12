@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class MainApplication : MonoBehaviourPunCallbacks
 {
-    public const int kMaxPlayersPerRoom = 2;
+    public const int kMaxPlayersPerRoom = 1;
     public enum State
     {
         kNone, kNotConnected, kConnected, kEnteredRoom, kGameStarted
