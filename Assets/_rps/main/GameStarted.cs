@@ -98,17 +98,17 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
             if (result == CardResult.Win)
             {
                 selfCard.Win(selfState, opponentState);
-                opponentCard.Lose(selfState, opponentState);
+                opponentCard.Lose(opponentState, selfState);
             }
             else if (result == CardResult.Lose)
             {
                 selfCard.Lose(selfState, opponentState);
-                opponentCard.Win(selfState, opponentState);
+                opponentCard.Win(opponentState, selfState);
             }
             else if (result == CardResult.Tie)
             {
                 selfCard.Tie(selfState, opponentState);
-                opponentCard.Tie(selfState, opponentState);
+                opponentCard.Tie(opponentState, selfState);
             }
             newRound();
         }
