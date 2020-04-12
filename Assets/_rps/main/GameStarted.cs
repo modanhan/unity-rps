@@ -52,9 +52,9 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
         opponentPlayed = -1;
     }
 
-    void Play(int ID)
+    void Play(int idx)
     {
-        object[] data = { ID };
+        object[] data = { idx };
         RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
         SendOptions sendOptions = new SendOptions { Reliability = true };
         PhotonNetwork.RaiseEvent(EventCode.kPlayedCard, data, raiseEventOptions, sendOptions);
@@ -66,14 +66,17 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
         {
             var player = PhotonNetwork.CurrentRoom.GetPlayer(photonEvent.Sender);
             object[] data = (object[])photonEvent.CustomData;
-            int playeID = (int)data[0];
+            int idx = (int)data[0];
+            int ID = selfState.hand[idx];
             if (player == self)
             {
-                selfPlayed = playeID;
+                selfPlayed = ID;
+                selfState.hand.RemoveAt(idx);
+                selfState.Draw();
             }
             else if (player == opponent)
             {
-                opponentPlayed = playeID;
+                opponentPlayed = ID;
             }
             else
             {
@@ -140,14 +143,16 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
 
         y += 25;
         {
+            GUI.skin.button.wordWrap = true;
             GUI.enabled = selfPlayed == -1;
-            int x = 10;
-            foreach (var ID in selfState.hand)
+            int x = -90;
+            for (int i = 0; i < selfState.hand.Count; ++i)
             {
+                var ID = selfState.hand[i];
                 var card = CardDatabase.GetCard(ID);
                 if (GUI.Button(new Rect(x += 100, y, 100, 100), card.Name() + "\n\n" + card.Desc()))
                 {
-                    Play(ID);
+                    Play(i);
                 }
             }
             GUI.enabled = true;

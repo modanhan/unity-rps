@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class RPSPlayerState
 {
     const int kDefaultHandSize = 5;
-    public int health;
+    public int health = 30;
     public List<int> deck;
     public List<int> hand;
     public void TakeDamage(int damage)
@@ -21,10 +21,15 @@ public class RPSPlayerState
             Draw();
         }
     }
-    public void Draw()
+    public bool Draw()
     {
+        if (deck.Count == 0)
+        {
+            return false;
+        }
         hand.Add(deck[0]);
         deck.RemoveAt(0);
+        return true;
     }
 }
 
