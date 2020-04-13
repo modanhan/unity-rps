@@ -8,6 +8,10 @@ public static class ShufflingExtension
     // got it here: http://stackoverflow.com/questions/273313/randomize-a-listt/1262619#1262619 
     private static System.Random rng = new System.Random();
 
+    public static void Init(int seed)
+    {
+        rng = new System.Random(seed);
+    }
     public static void Shuffle<T>(this IList<T> list)
     {
         int n = list.Count;

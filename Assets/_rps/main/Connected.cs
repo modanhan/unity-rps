@@ -1,5 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Text;
 using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
@@ -11,6 +14,11 @@ public class Connected : MainApplicationReference
     public override void Init(MainApplication application)
     {
         this.application = application;
+
+        MD5 md5Hasher = MD5.Create();
+        var hashed = md5Hasher.ComputeHash(Encoding.UTF8.GetBytes(PhotonNetwork.LocalPlayer.UserId));
+        var ivalue = BitConverter.ToInt32(hashed, 0);
+        ShufflingExtension.Init(ivalue);
     }
     public override void OnJoinedRoom()
     {
