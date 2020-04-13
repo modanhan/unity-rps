@@ -16,6 +16,7 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
     RPSPlayerState opponentState;
     int selfIdx = -1;
     int opponentIdx = -1;
+    string roundInfo = "";
 
     int currentRound = 1;
     CardResult roundResult = CardResult.None;
@@ -104,13 +105,11 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
             {
                 selfIdx = idx;
                 int selfID = selfState.hand[selfIdx];
-                Debug.Log("self played " + idx + "-th card = " + selfState.hand[selfIdx] + " = " + CardDatabase.GetCard(selfID).Name());
             }
             else if (player == opponent)
             {
                 opponentIdx = idx;
                 int opponentId = opponentState.hand[opponentIdx];
-                Debug.Log("opponent played " + idx + "-th card = " + opponentState.hand[opponentIdx] + " = " + CardDatabase.GetCard(opponentId).Name());
             }
             else
             {
@@ -125,11 +124,15 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
     {
         if (selfIdx != -1 && opponentIdx != -1)
         {
+            roundInfo = "";
             int selfID = selfState.hand[selfIdx];
             int opponentID = opponentState.hand[opponentIdx];
             Card selfCard = CardDatabase.GetCard(selfID);
             Card opponentCard = CardDatabase.GetCard(opponentID);
             var result = Card.Compare(selfCard.type, opponentCard.type);
+            roundInfo += "Played " + selfCard.Name() + "\n";
+            roundInfo += "Opponent played " + opponentCard.Name() + "\n";
+            roundInfo += "Round " + result;
             if (result == CardResult.Win)
             {
                 selfCard.Win(selfState, opponentState);
@@ -169,24 +172,18 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
 
         if (selfIdx != -1)
         {
-            GUI.Label(new Rect(10, y += 50, 200, 20), "Played " + CardDatabase.GetCard(selfIdx).Name());
+            GUI.Label(new Rect(10, y += 50, 200, 20), "Played " + CardDatabase.GetCard(selfState.hand[selfIdx]).Name());
         }
         else
         {
             GUI.Label(new Rect(10, y += 50, 200, 20), "");
         }
 
-        switch (roundResult)
-        {
-            case CardResult.Lose: GUI.Label(new Rect(10, y += 25, 200, 20), "Round lost."); break;
-            case CardResult.Tie: GUI.Label(new Rect(10, y += 25, 200, 20), "Round tied."); break;
-            case CardResult.Win: GUI.Label(new Rect(10, y += 25, 200, 20), "Round won!"); break;
-            default: break;
-        }
+        GUI.skin.button.wordWrap = true;
+        GUI.Label(new Rect(10, y += 25, 500, 100), roundInfo);
 
-        y += 25;
+        y += 100;
         {
-            GUI.skin.button.wordWrap = true;
             GUI.enabled = (selfIdx == -1) && (opponentState != null);
             int x = -90;
             for (int i = 0; i < selfState.hand.Count; ++i)
