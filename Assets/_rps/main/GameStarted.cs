@@ -43,7 +43,7 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
         {
             data[i] = selfState.deck[i];
         }
-        RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
+        RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.Others };
         SendOptions sendOptions = new SendOptions { Reliability = true };
         PhotonNetwork.RaiseEvent(EventCode.kSyncInitCards, data, raiseEventOptions, sendOptions);
     }
@@ -80,7 +80,7 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
         if (photonEvent.Code == EventCode.kSyncInitCards)
         {
             var player = PhotonNetwork.CurrentRoom.GetPlayer(photonEvent.Sender);
-            if (player == self) return;
+            if (player == self) { Debug.LogError("Receiving command not sent to self."); return; }
             object[] data = (object[])photonEvent.CustomData;
             opponentState = new RPSPlayerState();
             for (int i = 0; i < opponentState.deck.Count; ++i)
@@ -90,10 +90,13 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
             for (int i = 0; i < RPSPlayerState.kDefaultHandSize; ++i)
             {
                 selfState.Draw();
+            }
+            for (int i = 0; i < RPSPlayerState.kDefaultHandSize; ++i)
+            {
                 opponentState.Draw();
             }
         }
-        else if (photonEvent.Code == EventCode.kPlayedCard)
+        if (photonEvent.Code == EventCode.kPlayedCard)
         {
             var player = PhotonNetwork.CurrentRoom.GetPlayer(photonEvent.Sender);
             object[] data = (object[])photonEvent.CustomData;
@@ -101,12 +104,14 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
             if (player == self)
             {
                 selfIdx = idx;
-                int selfID = selfState.hand[selfIdx]; Debug.Log("self played " + CardDatabase.GetCard(selfID).Name());
+                int selfID = selfState.hand[selfIdx];
+                Debug.Log("self played " + idx + "-th card = " + selfState.hand[selfIdx] + " = " + CardDatabase.GetCard(selfID).Name());
             }
             else if (player == opponent)
             {
                 opponentIdx = idx;
-                int opponentId = opponentState.hand[opponentIdx]; Debug.Log("opponent played " + CardDatabase.GetCard(opponentId).Name());
+                int opponentId = opponentState.hand[opponentIdx];
+                Debug.Log("opponent played " + idx + "-th card = " + opponentState.hand[opponentIdx] + " = " + CardDatabase.GetCard(opponentId).Name());
             }
             else
             {
@@ -189,7 +194,7 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
             {
                 var ID = selfState.hand[i];
                 var card = CardDatabase.GetCard(ID);
-                if (GUI.Button(new Rect(x += 100, y, 100, 100), card.Name() + "\n\n" + card.Desc()))
+                if (GUI.Button(new Rect(x += 100, y, 100, 100), card.Name() + card.ID + "\n\n" + card.Desc()))
                 {
                     Play(i);
                 }

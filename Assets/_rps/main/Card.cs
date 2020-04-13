@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using UnityEngine;
 public class RPSPlayerState
 {
     public const int kDefaultHandSize = 5;
@@ -13,7 +13,11 @@ public class RPSPlayerState
     }
     public RPSPlayerState()
     {
-        deck = Deck.deck_default;
+        deck = new List<int>();
+        for (int i = 0; i < Deck.deck_default.Count; ++i)
+        {
+            deck.Add(Deck.deck_default[i]);
+        }
         deck.Shuffle();
         hand = new List<int>();
     }
