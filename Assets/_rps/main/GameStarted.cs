@@ -20,6 +20,8 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
 
     int currentRound = 1;
     CardResult roundResult = CardResult.None;
+    CardResult gameResult = CardResult.None;
+    bool leavingRoom = false;
 
     public override void Init(MainApplication application)
     {
@@ -63,6 +65,19 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
 
     void newRound()
     {
+        if (selfState.health <= 0 && opponentState.health <= 0)
+        {
+            gameResult = CardResult.Tie;
+            return;
+        }
+        if (selfState.health <= 0)
+        {
+            gameResult = CardResult.Lose;
+        }
+        if (opponentState.health <= 0)
+        {
+            gameResult = CardResult.Win;
+        }
         currentRound++;
         selfIdx = -1;
         opponentIdx = -1;
@@ -164,6 +179,7 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
         GUI.Label(new Rect(10, y += 25, 200, 20), "vs Worthy opponent: ");
         GUI.Label(new Rect(10, y += 25, 200, 20), opponent.NickName);
 
+        // Current round info
         GUI.Label(new Rect(10, y += 50, 200, 20), "Round " + currentRound);
         GUI.Label(new Rect(10, y += 25, 200, 20), self.NickName + " health: " + selfState.health);
         if (opponentState != null)
@@ -171,15 +187,32 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
             GUI.Label(new Rect(10, y += 25, 200, 20), opponent.NickName + " health: " + opponentState.health);
         }
 
-        if (selfIdx != -1)
-        {
-            GUI.Label(new Rect(10, y += 50, 200, 20), "Played " + CardDatabase.GetCard(selfState.hand[selfIdx]).Name());
-        }
-        else
-        {
-            GUI.Label(new Rect(10, y += 50, 200, 20), "");
-        }
+        // Previous play info
+        if (selfIdx != -1) { GUI.Label(new Rect(10, y += 50, 200, 20), "Played " + CardDatabase.GetCard(selfState.hand[selfIdx]).Name()); }
+        else { GUI.Label(new Rect(10, y += 50, 200, 20), ""); }
 
+        // Game is over
+        if (gameResult != CardResult.None)
+        {
+            switch (gameResult)
+            {
+                case CardResult.Win: GUI.Label(new Rect(10, y += 50, 200, 20), "Victory!!!"); break;
+                case CardResult.Lose: GUI.Label(new Rect(10, y += 50, 200, 20), "Defeat"); break;
+                case CardResult.Tie: GUI.Label(new Rect(10, y += 50, 200, 20), "Tied"); break;
+            }
+
+            GUI.enabled = leavingRoom == false;
+            if (GUI.Button(new Rect(10, y += 25, 200, 20), "Back to menu"))
+            {
+                PhotonNetwork.LeaveRoom();
+                leavingRoom = true;
+            }
+            GUI.enabled = true;
+            return;
+        }
+        // Game is not over
+
+        // Card buttons
         GUI.skin.button.wordWrap = true;
         GUI.Label(new Rect(10, y += 25, 500, 100), roundInfo);
 
@@ -191,12 +224,17 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
             {
                 var ID = selfState.hand[i];
                 var card = CardDatabase.GetCard(ID);
-                if (GUI.Button(new Rect(x += 100, y, 100, 100), card.Name() + card.ID + "\n\n" + card.Desc()))
+                if (GUI.Button(new Rect(x += 100, y, 100, 100), string.Format("{0}\n\n{1}", card.Name(), card.Desc())))
                 {
                     Play(i);
                 }
             }
             GUI.enabled = true;
         }
+    }
+
+    public override void OnLeftRoom()
+    {
+        application.UpdateState(MainApplication.State.kConnected);
     }
 }
