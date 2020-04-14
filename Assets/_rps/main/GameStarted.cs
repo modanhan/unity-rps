@@ -24,6 +24,7 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
     public override void Init(MainApplication application)
     {
         this.application = application;
+        PhotonNetwork.CurrentRoom.IsOpen = false;
         selfState = new RPSPlayerState();
 
         SyncInitCards();
