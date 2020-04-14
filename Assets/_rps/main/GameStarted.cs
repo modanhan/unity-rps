@@ -187,9 +187,13 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
             GUI.Label(new Rect(10, y += 25, 200, 20), opponent.NickName + " health: " + opponentState.health);
         }
 
-        // Previous play info
+        // Current play info
         if (selfIdx != -1) { GUI.Label(new Rect(10, y += 50, 200, 20), "Played " + CardDatabase.GetCard(selfState.hand[selfIdx]).Name()); }
         else { GUI.Label(new Rect(10, y += 50, 200, 20), ""); }
+
+        // Previous play info
+        GUI.skin.button.wordWrap = true;
+        GUI.Label(new Rect(10, y += 25, 500, 100), roundInfo);
 
         // Game is over
         if (gameResult != CardResult.None)
@@ -213,9 +217,6 @@ public class GameStarted : MainApplicationReference, IOnEventCallback
         // Game is not over
 
         // Card buttons
-        GUI.skin.button.wordWrap = true;
-        GUI.Label(new Rect(10, y += 25, 500, 100), roundInfo);
-
         y += 100;
         {
             GUI.enabled = (selfIdx == -1) && (opponentState != null);
